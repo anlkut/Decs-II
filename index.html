@@ -176,7 +176,7 @@ async function rotateCurrent(k){
     canvas.height=img.width;
     const ctx=canvas.getContext('2d');
     ctx.translate(canvas.width/2,canvas.height/2);
-    ctx.rotate(Math.PI/2);
+    ctx.rotate(-Math.PI/2);
     ctx.drawImage(img,-img.width/2,-img.height/2);
     view.dr[k]={id:null,url:canvas.toDataURL('image/jpeg',.85)};
     view.msg=null;
