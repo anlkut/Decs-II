@@ -33,12 +33,6 @@ hr{border:0;border-top:1px solid var(--bd);width:100%;margin:16px 0}
 .sec{margin:18px 0 6px;font-weight:600;color:var(--mu);font-size:13px;text-transform:uppercase}
 details{margin-top:20px}summary{color:var(--ac);cursor:pointer}
 .top{display:flex;justify-content:space-between;align-items:center}
-img.ph{display:block;max-width:100%;max-height:32vh;margin:8px auto;border-radius:10px;object-fit:contain}
-.thumb{width:44px;height:44px;object-fit:cover;border-radius:8px;margin-right:10px;flex:none}
-.pv{display:flex;align-items:center;gap:10px;margin:4px 0}.pv img{max-height:90px;max-width:50%;border-radius:8px}
-.btnl{display:block;text-align:center;border:1px dashed var(--bd);border-radius:10px;padding:10px;color:var(--ac);cursor:pointer;margin:4px 0}
-.msg{color:var(--r);font-size:14px;margin:6px 0}
-.row .t{display:flex;align-items:center}.row .t>div{min-width:0}
 </style>
 </head>
 <body>
@@ -77,29 +71,22 @@ function home(){
   return `<h1>Destelerim</h1>`+
   (S.decks.length?S.decks.map(d=>`<div class="row" data-act="open" data-id="${d.id}"><div><b>${esc(d.name)}</b><div class="mu">${d.cards.length} kart · ${d.cards.filter(isDue).length} tekrar bekliyor</div></div><span>›</span></div>`).join(''):'<p class="mu">Henüz deste yok. Aşağıdan ilkini oluşturun.</p>')+
   `<div class="sec">Yeni deste</div><input id="dn" placeholder="Deste adı"><button class="pri" data-act="newdeck">Deste ekle</button>`+
-  `<details><summary>Yedekle / geri yükle</summary><p class="mu">Aşağıdaki metni kopyalayıp bir yere kaydedin. Geri yüklemek için yapıştırıp düğmeye basın. Fotoğraflar yedeğe dahil değildir.</p><textarea id="bk">${esc(JSON.stringify(S))}</textarea><button data-act="restore">Geri yükle</button><div id="bkm" class="mu"></div></details>`;
+  `<details><summary>Yedekle / geri yükle</summary><p class="mu">Aşağıdaki metni kopyalayıp bir yere kaydedin. Geri yüklemek için yapıştırıp düğmeye basın.</p><textarea id="bk">${esc(JSON.stringify(S))}</textarea><button data-act="restore">Geri yükle</button><div id="bkm" class="mu"></div></details>`;
 }
 function deckView(){
   const d=deck();if(!d){view={v:'home'};return home()}
   const due=d.cards.filter(isDue).length;
   const ed=view.edit?d.cards.find(c=>c.id===view.edit):null;
-  const im=k=>k&&IMG[k]?{id:k,url:IMG[k]}:null;
-  const dr=view.dr||(view.dr=ed?{f:ed.f,b:ed.b,fi:im(ed.fi),bi:im(ed.bi)}:{f:'',b:'',fi:null,bi:null});
-  const side=(lab,tid,pid,tk,ik)=>`<div class="sec">${lab}</div><textarea id="${tid}" placeholder="Metin (isteğe bağlı)">${esc(dr[tk])}</textarea>`+
-    (dr[ik]?`<div class="pv"><img src="${dr[ik].url}" alt=""><button class="sm" data-act="rmimg" data-id="${ik}">Fotoğrafı kaldır</button></div>`
-    :`<label class="btnl">📷 Fotoğraf çek / seç<input type="file" accept="image/*" id="${pid}" hidden></label>`);
   return `<div class="top"><button class="ghost" data-act="back">‹ Destelerim</button><button class="sm" data-act="deldeck">${view.confD?'Emin misiniz?':'Desteyi sil'}</button></div>
   <h1>${esc(d.name)}</h1>
   <button class="pri" data-act="study" data-id="sm" ${due?'':'disabled'}>Çalış (aralıklı tekrar) — ${due} kart</button>
   <button class="pri" data-act="study" data-id="sh" ${d.cards.length?'':'disabled'} style="background:var(--cd);color:var(--ac)">Karıştır — tüm kartlar (${d.cards.length})</button>
-  <div class="sec" style="margin-top:24px;color:var(--tx);font-size:16px;text-transform:none">${ed?'Kartı düzenle':'Yeni kart'}</div>
-  ${side('Ön yüz','cf','pf','f','fi')}${side('Arka yüz','cb','pb','b','bi')}
-  ${view.msg?`<div class="msg">${esc(view.msg)}</div>`:''}
+  <div class="sec">${ed?'Kartı düzenle':'Yeni kart'}</div>
+  <textarea id="cf" placeholder="Ön yüz">${ed?esc(ed.f):''}</textarea><textarea id="cb" placeholder="Arka yüz">${ed?esc(ed.b):''}</textarea>
   <button class="pri" data-act="savecard">${ed?'Kaydet':'Kart ekle'}</button>${ed?'<button data-act="canceledit" style="width:100%">Vazgeç</button>':''}
-  <details><summary>Toplu ekle (sadece metin)</summary><p class="mu">Her satıra bir kart: ön ve arka yüzü sekme (Tab) veya noktalı virgül ile ayırın.</p><textarea id="bulk" placeholder="elma;apple"></textarea><button data-act="bulk">Ekle</button></details>
+  <details><summary>Toplu ekle</summary><p class="mu">Her satıra bir kart: ön ve arka yüzü sekme (Tab) veya noktalı virgül ile ayırın.</p><textarea id="bulk" placeholder="elma;apple"></textarea><button data-act="bulk">Ekle</button></details>
   <div class="sec">Kartlar</div>`+
-  (d.cards.length?d.cards.map(c=>{const th=c.fi&&IMG[c.fi]?c.fi:c.bi&&IMG[c.bi]?c.bi:null;
-    return `<div class="row"><div class="t" data-act="edit" data-id="${c.id}">${th?`<img class="thumb" src="${IMG[th]}" alt="">`:''}<div><b>${esc(c.f)||'🖼 Fotoğraf'}</b><div class="mu">${esc(c.b)||'🖼 Fotoğraf'}</div></div></div><button class="sm" data-act="delcard" data-id="${c.id}">${view.confC===c.id?'Emin misiniz?':'Sil'}</button></div>`}).join(''):'<p class="mu">Bu destede kart yok.</p>');
+  (d.cards.length?d.cards.map(c=>`<div class="row"><div class="t" data-act="edit" data-id="${c.id}"><b>${esc(c.f)}</b><div class="mu">${esc(c.b)}</div></div><button class="sm" data-act="delcard" data-id="${c.id}">${view.confC===c.id?'Emin misiniz?':'Sil'}</button></div>`).join(''):'<p class="mu">Bu destede kart yok.</p>');
 }
 function studyView(){
   const d=deck(),c=d&&d.cards.find(x=>x.id===view.q[0]);
@@ -110,7 +97,7 @@ function studyView(){
   else if(view.mode==='sm'){const n=['Tekrar','Zor','İyi','Kolay'],col=['--r','--o','--g','--b'];
     b=`<div class="btns">`+n.map((t,i)=>`<button data-act="ans" data-id="${i}" style="color:var(${col[i]})">${t}<small>${lbl(nxt(c,i).int)}</small></button>`).join('')+`</div>`}
   else b=`<div class="btns"><button data-act="ans" data-id="0" style="color:var(--r)">Bilemedim</button><button data-act="ans" data-id="2" style="color:var(--g)">Bildim</button></div>`;
-  return top+`<div class="face" data-act="flip">${ph(c.fi)}${c.f?`<div class="q">${esc(c.f)}</div>`:''}${view.flip?`<hr>${ph(c.bi)}${c.b?`<div class="a">${esc(c.b)}</div>`:''}`:''}</div>`+b;
+  return top+`<div class="face" data-act="flip"><div class="q">${esc(c.f)}</div>${view.flip?`<hr><div class="a">${esc(c.b)}</div>`:''}</div>`+b;
 }
 function render(){
   const app=document.getElementById('app');
@@ -120,37 +107,18 @@ function render(){
 
 /* Eylemler */
 const val=id=>(document.getElementById(id)||{}).value||'';
-function sync(){const f=document.getElementById('cf'),b=document.getElementById('cb');if(view.dr&&f&&b){view.dr.f=f.value;view.dr.b=b.value}}
-function delImgs(c){[c.fi,c.bi].forEach(k=>{if(k){delete IMG[k];if(db)idbDel(k).catch(()=>{})}})}
-async function saveCard(d){
-  const f=val('cf').trim(),b=val('cb').trim(),dr=view.dr||{fi:null,bi:null};
-  if(!(f||dr.fi)||!(b||dr.bi)){view.msg='Her yüz için metin veya fotoğraf ekleyin.';render();return}
-  const c=view.edit?d.cards.find(x=>x.id===view.edit):newCard('','');
-  c.f=f;c.b=b;
-  for(const k of ['fi','bi']){
-    const cur=dr[k],old=c[k];
-    if(!cur){if(old)delImgs({fi:old});c[k]=null}
-    else if(cur.id){c[k]=cur.id}
-    else{const id=uid();IMG[id]=cur.url;c[k]=id;
-      try{await idbPut(id,cur.url)}catch(e){view.msg='Fotoğraf kalıcı olarak kaydedilemedi.'}
-      if(old)delImgs({fi:old})}
-  }
-  if(!view.edit)d.cards.push(c);
-  view.edit=null;view.dr=null;save();render();
-}
 function act(a,id){
-  sync();view.msg=null;
   const d=view.id?deck():null;
   switch(a){
     case 'open':view={v:'deck',id};break;
     case 'back':view={v:'home'};break;
     case 'newdeck':{const n=val('dn').trim();if(!n)return;S.decks.push({id:uid(),name:n,cards:[]});save();break}
-    case 'deldeck':if(!view.confD){view.confD=true;break}d.cards.forEach(delImgs);S.decks=S.decks.filter(x=>x.id!==view.id);save();view={v:'home'};break;
-    case 'savecard':saveCard(d);return;
-    case 'edit':view.edit=id;view.dr=null;break;
-    case 'canceledit':view.edit=null;view.dr=null;break;
-    case 'rmimg':view.dr[id]=null;break;
-    case 'delcard':if(view.confC!==id){view.confC=id;break}delImgs(d.cards.find(c=>c.id===id));d.cards=d.cards.filter(c=>c.id!==id);view.confC=null;save();break;
+    case 'deldeck':if(!view.confD){view.confD=true;break}S.decks=S.decks.filter(x=>x.id!==view.id);save();view={v:'home'};break;
+    case 'savecard':{const f=val('cf').trim(),b=val('cb').trim();if(!f||!b)return;
+      if(view.edit){const c=d.cards.find(x=>x.id===view.edit);c.f=f;c.b=b;view.edit=null}else d.cards.push(newCard(f,b));save();break}
+    case 'edit':view.edit=id;break;
+    case 'canceledit':view.edit=null;break;
+    case 'delcard':if(view.confC!==id){view.confC=id;break}d.cards=d.cards.filter(c=>c.id!==id);view.confC=null;save();break;
     case 'bulk':val('bulk').split('\n').forEach(l=>{const m=l.match(/^(.*?)(?:\t|;)(.*)$/);if(m&&m[1].trim()&&m[2].trim())d.cards.push(newCard(m[1].trim(),m[2].trim()))});save();break;
     case 'study':{const cs=id==='sm'?d.cards.filter(isDue):d.cards;view={v:'study',id:view.id,mode:id,q:shuffle(cs).map(c=>c.id),flip:false,cnt:0};break}
     case 'flip':view.flip=!view.flip;break;
@@ -161,29 +129,8 @@ function act(a,id){
   }
   render();
 }
-/* Fotoğraf */
-function readImg(file){return new Promise((res,rej)=>{const img=new Image(),u=URL.createObjectURL(file);
-  img.onload=()=>{const s=Math.min(1,900/Math.max(img.width,img.height)),c=document.createElement('canvas');
-    c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-    URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',.75))};
-  img.onerror=()=>{URL.revokeObjectURL(u);rej(new Error('img'))};img.src=u})}
-document.addEventListener('change',async e=>{
-  const t=e.target;if(t.id!=='pf'&&t.id!=='pb')return;
-  const file=t.files&&t.files[0];if(!file||!view.dr)return;
-  sync();
-  try{view.dr[t.id==='pf'?'fi':'bi']={id:null,url:await readImg(file)};view.msg=null}catch(err){view.msg='Fotoğraf okunamadı.'}
-  render();
-});
-/* IndexedDB (fotoğraflar) */
-let IMG={},db=null;
-const ph=k=>k&&IMG[k]?`<img class="ph" src="${IMG[k]}" alt="">`:'';
-function idbOpen(){return new Promise((res,rej)=>{const r=indexedDB.open('kartlar-img',1);r.onupgradeneeded=()=>r.result.createObjectStore('img');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
-function idbPut(k,v){return new Promise((res,rej)=>{if(!db)return rej();const t=db.transaction('img','readwrite');t.objectStore('img').put(v,k);t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})}
-function idbDel(k){return new Promise((res,rej)=>{const t=db.transaction('img','readwrite');t.objectStore('img').delete(k);t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})}
-function idbAll(){return new Promise((res,rej)=>{const o={},q=db.transaction('img').objectStore('img').openCursor();q.onsuccess=()=>{const c=q.result;if(c){o[c.key]=c.value;c.continue()}else res(o)};q.onerror=()=>rej(q.error)})}
 document.addEventListener('click',e=>{const t=e.target.closest('[data-act]');if(t)act(t.dataset.act,t.dataset.id)});
-try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
-(async()=>{try{db=await idbOpen();IMG=await idbAll()}catch(e){db=null}render()})();
+render();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
